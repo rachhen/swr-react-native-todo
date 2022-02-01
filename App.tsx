@@ -1,20 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { SWRConfig } from "swr";
+import { StatusBar } from "expo-status-bar";
+import {
+  AppState,
+  AppStateStatus,
+  SafeAreaView,
+  StyleSheet,
+  View,
+} from "react-native";
+import Input from "./components/Input";
+import Todos from "./components/Todos";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SWRConfig
+      value={{
+        provider: () => new Map(),
+        isVisible: () => {
+          return true;
+        },
+        initFocus(callback) {
+          let appState = AppState.currentState;
+
+          const onAppStateChange = (nextAppState: AppStateStatus) => {
+            if (
+              appState.match(/inactive|background/) &&
+              nextAppState === "active"
+            ) {
+              callback();
+            }
+            appState = nextAppState;
+          };
+
+          AppState.addEventListener("change", onAppStateChange);
+        },
+      }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <Todos />
+          <StatusBar style="auto" />
+        </View>
+      </SafeAreaView>
+    </SWRConfig>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
   },
 });
